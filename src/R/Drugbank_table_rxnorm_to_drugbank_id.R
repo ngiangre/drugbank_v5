@@ -6,8 +6,8 @@
 
 # load libraries ----------------------------------------------------------
 
-library(tidyverse)
-library(data.table)
+#install.packages("pacman")
+pacman::p_load(tidyverse,data.table)
 
 # load data ---------------------------------------------------------------
 
@@ -23,7 +23,8 @@ concept_relationship <- fread("../../vocabulary_various/CONCEPT_RELATIONSHIP.csv
 
 atc_code_concepts <- concept[concept_code %in% drug_atc_codes$atc_code,
                            .(atc_code = concept_code,
-                             atc_concept_id = concept_id)] %>% 
+                             atc_concept_id = concept_id,
+                             atc_concept_name = concept_name)] %>% 
   unique()
 
 
@@ -71,6 +72,7 @@ atc_rxnorm_merged <-
        "level_4","code_4",
        "drugbank-id",
        "atc_concept_id",
+       "atc_concept_name",
        "rxnorm_concept_id",
        "rxnorm_concept_code",
        "rxnorm_concept_name",
@@ -83,6 +85,7 @@ atc_rxnorm_merged %>%
 
 database_connection <- DBI::dbConnect(RSQLite::SQLite(), "../../drugbank.sqlite")
 
-dplyr::copy_to(database_connection,atc_rxnorm_merged,name="drug_atc_rxnorm_merged",temporary=F)
+dplyr::copy_to(database_connection,atc_rxnorm_merged,
+               name="drug_atc_rxnorm_merged",temporary=F,overwrite = T)
 
 DBI::dbDisconnect(database_connection)
